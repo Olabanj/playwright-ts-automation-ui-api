@@ -1,19 +1,8 @@
-import { test, expect } from '@playwright/test';
-import { JsonPlaceholderClient } from './support/jsonPlaceholderClient';
+import { test, expect } from './fixtures/api.fixtures';
 
 test.describe('JSONPlaceholder API', () => {
-  const client = new JsonPlaceholderClient();
-
-  test.beforeAll(async () => {
-    await client.init();
-  });
-
-  test.afterAll(async () => {
-    await client.dispose();
-  });
-
-  test('Get a request return a product via api', async () => {
-    const response = await client.getPosts();
+  test('Get a request return a product via api', async ({ apiClient }) => {
+    const response = await apiClient.getPosts();
     expect(response.status()).toBe(200);
     expect(response.ok()).toBeTruthy();
 
@@ -23,8 +12,8 @@ test.describe('JSONPlaceholder API', () => {
     expect(responseBody[0].id).toBe(1);
   });
 
-  test('create a product via api', async () => {
-    const response = await client.createPost({
+  test('create a product via api', async ({ apiClient }) => {
+    const response = await apiClient.createPost({
       title: 'New Product',
       body: 'This is a new product',
       userId: 1,
@@ -38,8 +27,8 @@ test.describe('JSONPlaceholder API', () => {
     expect(responseBody.userId).toBe(1);
   });
 
-  test('update a product via api', async () => {
-    const response = await client.updatePost(1, {
+  test('update a product via api', async ({ apiClient }) => {
+    const response = await apiClient.updatePost(1, {
       title: 'Updated Product',
       body: 'This is an updated product',
       userId: 1,
@@ -53,14 +42,14 @@ test.describe('JSONPlaceholder API', () => {
     expect(responseBody.userId).toBe(1);
   });
 
-  test('delete a product via api', async () => {
-    const response = await client.deletePost(1);
+  test('delete a product via api', async ({ apiClient }) => {
+    const response = await apiClient.deletePost(1);
     expect(response.status()).toBe(200);
     expect(response.ok()).toBeTruthy();
   });
 
-  test('update a partial product via api', async () => {
-    const response = await client.patchPost(1, {
+  test('update a partial product via api', async ({ apiClient }) => {
+    const response = await apiClient.patchPost(1, {
       title: 'Partially Updated Product',
     });
     expect(response.status()).toBe(200);
@@ -70,8 +59,8 @@ test.describe('JSONPlaceholder API', () => {
     expect(responseBody.title).toBe('Partially Updated Product');
   });
 
-  test('get a single product via api', async () => {
-    const response = await client.getPost(1);
+  test('get a single product via api', async ({ apiClient }) => {
+    const response = await apiClient.getPost(1);
     expect(response.status()).toBe(200);
     expect(response.ok()).toBeTruthy();
 
@@ -80,26 +69,26 @@ test.describe('JSONPlaceholder API', () => {
     expect(responseBody.id).toBe(1);
   });
 
-  test('get a single product that does not exist via api', async () => {
-    const response = await client.getPost(9999);
+  test('get a single product that does not exist via api', async ({ apiClient }) => {
+    const response = await apiClient.getPost(9999);
     expect(response.status()).toBe(404);
     expect(response.ok()).toBeFalsy();
   });
 
-  test('get a single product with invalid id via api', async () => {
-    const response = await client.getPost('invalid');
+  test('get a single product with invalid id via api', async ({ apiClient }) => {
+    const response = await apiClient.getPost('invalid');
     expect(response.status()).toBe(404);
     expect(response.ok()).toBeFalsy();
   });
 
-  test('get a single product with invalid endpoint via api', async () => {
-    const response = await client.get('/invalid');
+  test('get a single product with invalid endpoint via api', async ({ apiClient }) => {
+    const response = await apiClient.get('/invalid');
     expect(response.status()).toBe(404);
     expect(response.ok()).toBeFalsy();
   });
 
-  test('get a single a with a single comment via api', async () => {
-    const response = await client.getComment(1);
+  test('get a single a with a single comment via api', async ({ apiClient }) => {
+    const response = await apiClient.getComment(1);
     expect(response.status()).toBe(200);
     expect(response.ok()).toBeTruthy();
 

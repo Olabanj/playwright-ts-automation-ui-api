@@ -10,7 +10,10 @@ export class JsonPlaceholderClient {
   private context: APIRequestContext | null = null;
 
   async init() {
-    this.context = await request.newContext({ baseURL: 'https://jsonplaceholder.typicode.com' });
+    this.context = await request.newContext({
+      baseURL: process.env.API_BASE_URL ?? 'https://jsonplaceholder.typicode.com',
+      extraHTTPHeaders: { 'Content-Type': 'application/json' },
+    });
   }
 
   async dispose() {
