@@ -17,10 +17,10 @@ written explanation of *why* a suggestion is correct before accepting it.
 
 | Phase | Focus | Status |
 |---|---|---|
-| 0 — Setup & Git Hygiene | TS config, linting, first Playwright test (headed + headless) | ✅ Done |
-| 1 — Programming Foundations | TS fundamentals, OOP, SOLID, standalone utility lib + unit tests | ⏳ Not started |
-| 2 — Playwright Fundamentals | Locators, auto-waiting, assertions, fixtures/hooks, 10-15 UI tests | 🚧 In progress (1 UI test so far) |
-| 3 — Framework Architecture | POM/Screenplay, custom fixtures, factory/builder patterns, `/src` structure | ⏳ Not started |
+| 0 — Setup & Git Hygiene | TS config, linting, first Playwright test (headed + headless) | Done |
+| 1 — Programming Foundations | TS fundamentals, OOP, SOLID, standalone utility lib + unit tests |Done |
+| 2 — Playwright Fundamentals | Locators, auto-waiting, assertions, fixtures/hooks, 10-15 UI tests | Done |
+| 3 — Framework Architecture | POM/Screenplay, custom fixtures, factory/builder patterns, `/src` structure | Done |
 | 4 — API Test Automation | `APIRequestContext`, CRUD + negative cases, schema validation, API-seeded UI state | 🚧 In progress (CRUD suite + reusable client done; schema validation and API-seeded UI tests pending) |
 | 5 — CI/CD & Test Infrastructure | GitHub Actions, sharding, HTML/Allure reporting, flaky-test policy | ⏳ Not started |
 | 6 — Maintainability & QE | Test pyramid strategy, risk-based prioritization, visual/a11y testing, strategy doc | ⏳ Not started |
