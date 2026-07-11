@@ -1,5 +1,5 @@
-import { test, expect } from './fixtures/api.fixtures';
-import { generateProduct } from './support/testDataFactory';
+import { test, expect } from '@fixtures/api.fixtures';
+import { generateProduct } from '@utils/testDataFactory';
 
 test.describe('JSONPlaceholder API', () => {
   test('Get a request return a product via api', { tag: '@smoke' }, async ({ apiClient }) => {

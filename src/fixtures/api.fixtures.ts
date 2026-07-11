@@ -1,5 +1,5 @@
 import { test as base, expect } from '@playwright/test';
-import { JsonPlaceholderClient } from '../support/jsonPlaceholderClient';
+import { JsonPlaceholderClient } from '../utils/jsonPlaceholderClient';
 
 export const test = base.extend<{ apiClient: JsonPlaceholderClient }>({
   apiClient: async ({}, use) => {

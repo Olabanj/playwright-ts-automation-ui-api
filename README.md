@@ -1,10 +1,9 @@
 # sdet-portfolio
 
-A TypeScript + Playwright test automation portfolio Each phase of the roadmap adds to this same
+A TypeScript + Playwright test automation portfolio. Each phase of the roadmap adds to this same
 repo rather than starting a new project, so the commit history itself
 demonstrates how the framework evolved from a single "hello world" test into
 a structured automation suite.
-
 
 
 ## Skills demonstrated
@@ -14,15 +13,17 @@ to prove, for anyone reviewing this as a hiring artifact:
 
 | Skill | Where |
 |---|---|
-| API CRUD + negative-case testing | [`tests/api.spec.ts`](tests/api.spec.ts) |
-| Multi-hop chained API flows (data flowing between requests) | [`tests/api.spec.ts`](tests/api.spec.ts) — `Chained lookup` and `Chained lifecycle` suites |
-| Contract/schema validation (Zod) | [`tests/schemas/product.schema.ts`](tests/schemas/product.schema.ts), [`tests/schema-demo.spec.ts`](tests/schema-demo.spec.ts) |
-| Custom Playwright fixtures (dependency injection) | [`tests/fixtures/api.fixtures.ts`](tests/fixtures/api.fixtures.ts) |
-| Reusable API client (service-object pattern) | [`tests/support/jsonPlaceholderClient.ts`](tests/support/jsonPlaceholderClient.ts) |
-| Synthetic test-data generation | [`tests/support/testDataFactory.ts`](tests/support/testDataFactory.ts) |
-| UI test automation | [`tests/hello.spec.ts`](tests/hello.spec.ts) |
-| Auth patterns (bearer, API key, OAuth+storageState) | [`tests/authPattern.spec.ts`](tests/authPattern.spec.ts) |
-| API-seeded UI setup pattern | [`tests/chainigApiCall.spec.ts`](tests/chainigApiCall.spec.ts) |
+| API CRUD + negative-case testing | [`tests/api/api.spec.ts`](tests/api/api.spec.ts) |
+| Multi-hop chained API flows (data flowing between requests) | [`tests/api/api.spec.ts`](tests/api/api.spec.ts) — `Chained lookup` and `Chained lifecycle` suites |
+| Contract/schema validation (Zod) | [`src/schemas/product.schema.ts`](src/schemas/product.schema.ts), [`tests/api/schema-demo.spec.ts`](tests/api/schema-demo.spec.ts) |
+| Page Object Model | [`src/pages/LoginPage.ts`](src/pages/LoginPage.ts) |
+| Custom Playwright fixtures (dependency injection) | [`src/fixtures/api.fixtures.ts`](src/fixtures/api.fixtures.ts) |
+| Reusable API client (service-object pattern) | [`src/utils/jsonPlaceholderClient.ts`](src/utils/jsonPlaceholderClient.ts) |
+| Synthetic test-data generation | [`src/utils/testDataFactory.ts`](src/utils/testDataFactory.ts) |
+| Environment configuration | [`src/config/env.ts`](src/config/env.ts) |
+| UI test automation | [`tests/ui/hello.spec.ts`](tests/ui/hello.spec.ts) |
+| Auth patterns (bearer, API key, OAuth+storageState) | [`tests/api/authPattern.spec.ts`](tests/api/authPattern.spec.ts) |
+| API-seeded UI setup pattern | [`tests/api/chainingApiCall.spec.ts`](tests/api/chainingApiCall.spec.ts) |
 | CI/CD: tagged smoke-on-PR + nightly regression, 4-way sharding, merged HTML reports, GitHub Pages publishing, Slack/webhook failure alerts | [`.github/workflows/playwright.yml`](.github/workflows/playwright.yml) |
 | Test strategy & quality engineering (pyramid, risk-based prioritization, flakiness policy, metrics) | [`docs/TEST_STRATEGY.md`](docs/TEST_STRATEGY.md) |
 
@@ -31,9 +32,9 @@ to prove, for anyone reviewing this as a hiring artifact:
 | Phase | Focus | Status |
 |---|---|---|
 | 0 — Setup & Git Hygiene | TS config, linting, first Playwright test (headed + headless) | Done |
-| 1 — Programming Foundations | TS fundamentals, OOP, SOLID, standalone utility lib + unit tests | Done
-| 2 — Playwright Fundamentals | Locators, auto-waiting, assertions, fixtures/hooks, 10-15 UI tests | Done 
-| 3 — Framework Architecture | POM/Screenplay, custom fixtures, factory/builder patterns, `/src` structure | 🚧 In progress (custom `apiClient` fixture done; POM/factory/builder patterns and a `/src` reorg not done) |
+| 1 — Programming Foundations | TS fundamentals, OOP, SOLID, standalone utility lib + unit tests | ⏳ Not started |
+| 2 — Playwright Fundamentals | Locators, auto-waiting, assertions, fixtures/hooks, 10-15 UI tests | 🚧 In progress (1 UI smoke test via a Page Object; full 10-15 test UI suite not built) |
+| 3 — Framework Architecture | POM/Screenplay, custom fixtures, factory/builder patterns, `/src` structure | ✅ Done (`/src` reorg with `pages`/`fixtures`/`utils`/`config`/`schemas`, a `LoginPage` POM, custom `apiClient` fixture, centralized env config; Screenplay pattern and Builder/Singleton not covered) |
 | 4 — API Test Automation | `APIRequestContext`, CRUD + negative cases, schema validation, API-seeded UI state | ✅ Done (CRUD + negative cases + chained flows + Zod schema validation; API-seeded-UI is a documented reference pattern pending a real backend) |
 | 5 — CI/CD & Test Infrastructure | GitHub Actions, sharding, HTML/Allure reporting, flaky-test policy | ✅ Done (smoke-on-PR + nightly regression, 4-way sharding, merged HTML reports, GitHub Pages publishing, Slack/webhook failure alerts, CI retries) |
 | 6 — Maintainability & QE | Test pyramid strategy, risk-based prioritization, visual/a11y testing, strategy doc | Done |
@@ -41,41 +42,63 @@ to prove, for anyone reviewing this as a hiring artifact:
 
 ## What's in here
 
-- **UI testing** — [`tests/hello.spec.ts`](tests/hello.spec.ts): a login flow
-  test against [SauceDemo](https://www.saucedemo.com/), tagged `@smoke`,
-  covering locators, navigation, and assertions.
-- **API testing** — [`tests/api.spec.ts`](tests/api.spec.ts): a CRUD test
-  suite against the [JSONPlaceholder](https://jsonplaceholder.typicode.com/)
+Framework code lives in `/src` (reusable across the suite); specs live in
+`/tests`, split by layer (`ui/`, `api/`):
+
+```
+/src
+  /pages      -> Page Objects (LoginPage)
+  /fixtures   -> custom Playwright fixtures (apiClient)
+  /utils      -> reusable client + synthetic test-data factory
+  /config     -> environment config (base URLs)
+  /schemas    -> Zod contract schemas
+/tests
+  /ui         -> UI specs (use src/pages)
+  /api        -> API specs (use src/fixtures, src/utils, src/schemas)
+```
+
+- **UI testing** — [`tests/ui/hello.spec.ts`](tests/ui/hello.spec.ts): a login
+  flow test against [SauceDemo](https://www.saucedemo.com/), tagged
+  `@smoke`, driven through the [`LoginPage`](src/pages/LoginPage.ts) Page
+  Object rather than inline locators.
+- **Page Object** — [`src/pages/LoginPage.ts`](src/pages/LoginPage.ts): wraps
+  the SauceDemo login form's locators and actions (`goto()`, `login(...)`)
+  behind a class, so the test itself reads as intent, not raw selectors.
+- **API testing** — [`tests/api/api.spec.ts`](tests/api/api.spec.ts): a CRUD
+  test suite against the [JSONPlaceholder](https://jsonplaceholder.typicode.com/)
   fake REST API — happy-path and error-case scenarios (GET, POST, PUT,
   PATCH, DELETE, 404s, invalid input) — plus two `test.describe.serial`
   chained-flow suites where each step's response feeds the next request: a
   read-only `post → author → author's posts → comments` traversal over real
   seeded data, and a `create → patch → delete` lifecycle using the id the
   server actually assigns.
-- **Reusable API client** — [`tests/support/jsonPlaceholderClient.ts`](tests/support/jsonPlaceholderClient.ts):
+- **Reusable API client** — [`src/utils/jsonPlaceholderClient.ts`](src/utils/jsonPlaceholderClient.ts):
   wraps `APIRequestContext` in a small client class (init/dispose lifecycle,
   one method per endpoint) so tests call `client.getPost(1)` instead of
-  repeating raw `request.get(...)` calls and base URLs everywhere. Base URL
-  is configurable via `API_BASE_URL`.
-- **Custom Playwright fixture** — [`tests/fixtures/api.fixtures.ts`](tests/fixtures/api.fixtures.ts):
+  repeating raw `request.get(...)` calls and base URLs everywhere.
+- **Environment config** — [`src/config/env.ts`](src/config/env.ts): centralizes
+  `API_BASE_URL` and `UI_BASE_URL` (each overridable via env var, defaulting
+  to JSONPlaceholder/SauceDemo) so the client and Page Object don't hardcode
+  URLs directly.
+- **Custom Playwright fixture** — [`src/fixtures/api.fixtures.ts`](src/fixtures/api.fixtures.ts):
   extends Playwright's base `test` with an `apiClient` fixture that inits
   and disposes a fresh `JsonPlaceholderClient` automatically per test —
   tests just declare `async ({ apiClient }) => {...}`, no manual lifecycle
   management.
-- **Schema/contract validation** — [`tests/schemas/product.schema.ts`](tests/schemas/product.schema.ts)
+- **Schema/contract validation** — [`src/schemas/product.schema.ts`](src/schemas/product.schema.ts)
   defines a Zod schema with required/optional fields, an enum-restricted
   category, a nested object, and real formats (positive ints, email, ISO
-  datetime, bounded percentage); [`tests/schema-demo.spec.ts`](tests/schema-demo.spec.ts)
+  datetime, bounded percentage); [`tests/api/schema-demo.spec.ts`](tests/api/schema-demo.spec.ts)
   validates sample payloads against it.
-- **Synthetic test data** — [`tests/support/testDataFactory.ts`](tests/support/testDataFactory.ts):
+- **Synthetic test data** — [`src/utils/testDataFactory.ts`](src/utils/testDataFactory.ts):
   a `generateProduct()` factory (via `@faker-js/faker`) so create/update
   tests assert against generated values instead of hardcoded literals that
   would collide across parallel runs.
-- **Auth pattern reference** — [`tests/authPattern.spec.ts`](tests/authPattern.spec.ts):
+- **Auth pattern reference** — [`tests/api/authPattern.spec.ts`](tests/api/authPattern.spec.ts):
   bearer token, API key, and OAuth-via-`storageState` patterns for test
   setup. Runnable tests are marked `.skip` with a comment, since they target
   illustrative endpoints with no real backend behind them yet.
-- **API-seeded UI setup reference** — [`tests/chainigApiCall.spec.ts`](tests/chainigApiCall.spec.ts):
+- **API-seeded UI setup reference** — [`tests/api/chainingApiCall.spec.ts`](tests/api/chainingApiCall.spec.ts):
   seeding state via API calls to skip slow UI setup (create a user + order,
   then verify only the UI behavior that matters), plus a fixture-wrapped
   variant and a chained multi-call scenario. Also reference-only, `.skip`ped
@@ -104,7 +127,7 @@ npx playwright install   # first time only — downloads browser binaries
 npm test              # run the full suite headless
 npm run test:smoke     # run only tests tagged @smoke
 npm run test:headed   # run with a visible browser
-npx playwright test tests/api.spec.ts   # run a single file
+npx playwright test tests/api/api.spec.ts   # run a single file
 ```
 
 Test results and traces are written to `playwright-report/` and
@@ -226,18 +249,20 @@ Requires every file to be transpilable on its own, without whole-program type in
 ```json
     "baseUrl": ".",
     "paths": {
-      "@fixtures/*": ["tests/fixtures/*"],
-      "@pages/*": ["tests/pages/*"],
-      "@utils/*": ["tests/utils/*"]
+      "@fixtures/*": ["src/fixtures/*"],
+      "@pages/*": ["src/pages/*"],
+      "@utils/*": ["src/utils/*"],
+      "@config/*": ["src/config/*"],
+      "@schemas/*": ["src/schemas/*"]
     }
 ```
-`baseUrl` sets the root that the `paths` aliases below are resolved relative to. The aliases let test files import via `@pages/login.page` instead of `../../../pages/login.page`. Page objects, fixtures, and utils tend to get reorganized as a suite grows; aliases mean those moves don't require touching every import path across the test tree.
+`baseUrl` sets the root that the `paths` aliases below are resolved relative to. The aliases let test files import via `@pages/LoginPage` instead of `../../../src/pages/LoginPage`. Page objects, fixtures, and utils tend to get reorganized as a suite grows (this project's own `/src` reorg moved every one of these); aliases mean those moves don't require touching every import path across the test tree — only the `paths` targets here.
 
 ```json
   },
-  "include": ["tests/**/*.ts", "playwright.config.ts"],
+  "include": ["src/**/*.ts", "tests/**/*.ts", "playwright.config.ts", "learn/**/*.ts"],
 ```
-Scopes type-checking to the test tree and the Playwright config itself — the only TypeScript in this repo.
+Scopes type-checking to the framework code (`src/`), the test tree, the Playwright config, and the standalone learning notes — the only TypeScript in this repo.
 
 ```json
   "exclude": ["node_modules", "test-results", "playwright-report"]
@@ -266,12 +291,19 @@ Flat-config array: start from ESLint's recommended JS rules, then layer TypeScri
 
 ```js
   {
-    files: ['tests/**/*.ts'],
+    files: ['tests/**/*.ts', 'src/**/*.ts'],
     plugins: { playwright },
     rules: {
       ...playwright.configs['flat/recommended'].rules,
 ```
-Scopes the Playwright plugin to only the `tests/` directory, and pulls in its recommended rule set as a baseline — things like disallowing focused tests (`test.only`) from being committed.
+Scopes the Playwright plugin to the `tests/` directory and `src/` (framework
+code — fixtures, page objects, utils — that also uses Playwright's APIs),
+and pulls in its recommended rule set as a baseline — things like
+disallowing focused tests (`test.only`) from being committed, and (the
+reason `src/` needed including) an override for the base `no-empty-pattern`
+rule, since a fixture with no dependencies still destructures an empty `{}`
+as its first parameter — valid Playwright syntax that plain ESLint would
+otherwise flag as an error.
 
 ```js
       'playwright/no-conditional-in-test': 'error',
@@ -311,7 +343,7 @@ Disables every ESLint rule that overlaps with Prettier's formatting (indentation
 
 ```js
   {
-    ignores: ['node_modules/**', 'test-results/**', 'playwright-report/**', 'dist/**'],
+    ignores: ['node_modules/**', 'test-results/**', 'playwright-report/**', 'blob-report/**', 'dist/**'],
   },
 );
 ```

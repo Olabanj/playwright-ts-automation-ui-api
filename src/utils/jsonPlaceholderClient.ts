@@ -1,4 +1,5 @@
 import { request, APIRequestContext, APIResponse } from '@playwright/test';
+import { API_BASE_URL } from '../config/env';
 
 type PostPayload = {
   title: string;
@@ -11,7 +12,7 @@ export class JsonPlaceholderClient {
 
   async init() {
     this.context = await request.newContext({
-      baseURL: process.env.API_BASE_URL ?? 'https://jsonplaceholder.typicode.com',
+      baseURL: API_BASE_URL,
       extraHTTPHeaders: { 'Content-Type': 'application/json' },
     });
   }

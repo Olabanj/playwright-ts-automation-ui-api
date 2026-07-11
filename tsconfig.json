@@ -15,11 +15,13 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@fixtures/*": ["tests/fixtures/*"],
-      "@pages/*": ["tests/pages/*"],
-      "@utils/*": ["tests/utils/*"]
+      "@fixtures/*": ["src/fixtures/*"],
+      "@pages/*": ["src/pages/*"],
+      "@utils/*": ["src/utils/*"],
+      "@config/*": ["src/config/*"],
+      "@schemas/*": ["src/schemas/*"]
     }
   },
-  "include": ["tests/**/*.ts", "playwright.config.ts", "learn/**/*.ts"],
+  "include": ["src/**/*.ts", "tests/**/*.ts", "playwright.config.ts", "learn/**/*.ts"],
   "exclude": ["node_modules", "test-results", "playwright-report"]
 }

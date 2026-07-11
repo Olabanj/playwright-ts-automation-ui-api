@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { ProductSchema, Product } from './schemas/product.schema';
+import { ProductSchema, Product } from '@schemas/product.schema';
 
 const validProduct: Product = {
   id: 101,

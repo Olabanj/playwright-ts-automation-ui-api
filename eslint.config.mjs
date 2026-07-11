@@ -8,7 +8,7 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['tests/**/*.ts'],
+    files: ['tests/**/*.ts', 'src/**/*.ts'],
     plugins: { playwright },
     rules: {
       ...playwright.configs['flat/recommended'].rules,
@@ -25,6 +25,6 @@ export default tseslint.config(
   },
   prettier,
   {
-    ignores: ['node_modules/**', 'test-results/**', 'playwright-report/**', 'dist/**'],
+    ignores: ['node_modules/**', 'test-results/**', 'playwright-report/**', 'blob-report/**', 'dist/**'],
   },
 );

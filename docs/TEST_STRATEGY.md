@@ -28,11 +28,11 @@ still validate real request/response contracts and business rules across
 the network boundary.
 
 **Where this project actually stands:** heavily API-weighted by design —
-[`tests/api.spec.ts`](../tests/api.spec.ts) covers CRUD, negative cases, and
+[`tests/api/api.spec.ts`](../tests/api/api.spec.ts) covers CRUD, negative cases, and
 chained multi-call flows against JSONPlaceholder, plus schema-contract tests
-in [`tests/schema-demo.spec.ts`](../tests/schema-demo.spec.ts). UI is
+in [`tests/api/schema-demo.spec.ts`](../tests/api/schema-demo.spec.ts). UI is
 deliberately thin: one smoke test
-([`tests/hello.spec.ts`](../tests/hello.spec.ts)) covering the SauceDemo
+([`tests/ui/hello.spec.ts`](../tests/ui/hello.spec.ts)) covering the SauceDemo
 login golden path, not a full UI regression suite. **Unit is the current
 gap** — there's no standalone utility/data-factory layer with its own unit
 tests yet (tracked as roadmap Phase 1). Until that lands, the pyramid here
@@ -49,7 +49,7 @@ prioritize by **blast radius × change frequency**:
 | Must automate | CRUD contract of the core resource, negative/edge cases (404, invalid id, invalid endpoint) | Silent contract breaks affect every consumer of the API |
 | Must automate | Login golden path | Highest-traffic UI flow; if it breaks, nothing else matters |
 | Nice to have | Chained cross-resource flows (post → author → comments) | Validates real relationships, not just isolated endpoints |
-| Deliberately manual/skipped | Auth pattern variations, fintech-style chained scenarios in `authPattern.spec.ts` / `chainigApiCall.spec.ts` | Illustrative reference code against endpoints with no real backend yet — automating them now would just be testing a mock of a mock |
+| Deliberately manual/skipped | Auth pattern variations, fintech-style chained scenarios in `authPattern.spec.ts` / `chainingApiCall.spec.ts` | Illustrative reference code against endpoints with no real backend yet — automating them now would just be testing a mock of a mock |
 | Not worth automating | Pixel-perfect static content, rarely-changing marketing copy | Low blast radius, low change frequency — manual spot-check is cheaper than the ongoing maintenance of a brittle assertion |
 
 ## 3. Flakiness: root causes and policy
@@ -64,7 +64,7 @@ against each:
   auto-retrying `expect()`.
 - **Test interdependence** — one test's leftover state breaking another.
   Guarded by the `apiClient` fixture
-  ([`tests/fixtures/api.fixtures.ts`](../tests/fixtures/api.fixtures.ts))
+  ([`src/fixtures/api.fixtures.ts`](../src/fixtures/api.fixtures.ts))
   giving every test its own request context, init'd and disposed per test.
   Where tests *must* share state (the chained flows), that's made explicit
   via `test.describe.serial` rather than accidental ordering.
@@ -88,10 +88,10 @@ against each:
 
 | Strategy | Used here | Trade-off |
 |---|---|---|
-| Static fixtures | `tests/schemas/product.schema.ts` sample objects | Fastest, fully deterministic — but only as realistic as you keep it |
+| Static fixtures | `src/schemas/product.schema.ts` sample objects | Fastest, fully deterministic — but only as realistic as you keep it |
 | API seeding | Chained lifecycle test (`createPost` → capture id → act on it) | Exercises the real API, catches contract drift — slower, and only as reliable as the API's own persistence (JSONPlaceholder doesn't actually persist writes, a documented caveat in `api.spec.ts`) |
 | DB seeding | Not applicable — we don't own JSONPlaceholder's backend | For a real owned service, this bypasses the API layer entirely for speed, at the cost of not exercising API-level validation |
-| Synthetic/generated data | `generateProduct()` in [`tests/support/testDataFactory.ts`](../tests/support/testDataFactory.ts) (via `@faker-js/faker`), used in the create-product test and the chained lifecycle's create/patch steps | Avoids hardcoded literals colliding when tests run concurrently against a real, persistent backend — each run gets a fresh title/body/userId, and tests assert against the generated value rather than a fixed string |
+| Synthetic/generated data | `generateProduct()` in [`src/utils/testDataFactory.ts`](../src/utils/testDataFactory.ts) (via `@faker-js/faker`), used in the create-product test and the chained lifecycle's create/patch steps | Avoids hardcoded literals colliding when tests run concurrently against a real, persistent backend — each run gets a fresh title/body/userId, and tests assert against the generated value rather than a fixed string |
 
 ## 5. Shift-left practices
 
