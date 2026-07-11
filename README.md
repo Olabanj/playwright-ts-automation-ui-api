@@ -13,32 +13,86 @@ review code against SOLID principles, propose architectural tradeoffs, debug
 CI failures, and generate schemas/test cases, while always requiring a
 written explanation of *why* a suggestion is correct before accepting it.
 
+## Skills demonstrated
+
+A quick map from "what's in this repo" to the SDET competencies it's meant
+to prove, for anyone reviewing this as a hiring artifact:
+
+| Skill | Where |
+|---|---|
+| API CRUD + negative-case testing | [`tests/api.spec.ts`](tests/api.spec.ts) |
+| Multi-hop chained API flows (data flowing between requests) | [`tests/api.spec.ts`](tests/api.spec.ts) — `Chained lookup` and `Chained lifecycle` suites |
+| Contract/schema validation (Zod) | [`tests/schemas/product.schema.ts`](tests/schemas/product.schema.ts), [`tests/schema-demo.spec.ts`](tests/schema-demo.spec.ts) |
+| Custom Playwright fixtures (dependency injection) | [`tests/fixtures/api.fixtures.ts`](tests/fixtures/api.fixtures.ts) |
+| Reusable API client (service-object pattern) | [`tests/support/jsonPlaceholderClient.ts`](tests/support/jsonPlaceholderClient.ts) |
+| Synthetic test-data generation | [`tests/support/testDataFactory.ts`](tests/support/testDataFactory.ts) |
+| UI test automation | [`tests/hello.spec.ts`](tests/hello.spec.ts) |
+| Auth patterns (bearer, API key, OAuth+storageState) | [`tests/authPattern.spec.ts`](tests/authPattern.spec.ts) |
+| API-seeded UI setup pattern | [`tests/chainigApiCall.spec.ts`](tests/chainigApiCall.spec.ts) |
+| CI/CD: tagged smoke-on-PR + nightly regression, 4-way sharding, merged HTML reports, GitHub Pages publishing, Slack/webhook failure alerts | [`.github/workflows/playwright.yml`](.github/workflows/playwright.yml) |
+| Test strategy & quality engineering (pyramid, risk-based prioritization, flakiness policy, metrics) | [`docs/TEST_STRATEGY.md`](docs/TEST_STRATEGY.md) |
+
 ## Roadmap & progress
 
 | Phase | Focus | Status |
 |---|---|---|
 | 0 — Setup & Git Hygiene | TS config, linting, first Playwright test (headed + headless) | Done |
-| 1 — Programming Foundations | TS fundamentals, OOP, SOLID, standalone utility lib + unit tests |Done |
-| 2 — Playwright Fundamentals | Locators, auto-waiting, assertions, fixtures/hooks, 10-15 UI tests | Done |
-| 3 — Framework Architecture | POM/Screenplay, custom fixtures, factory/builder patterns, `/src` structure | Done |
-| 4 — API Test Automation | `APIRequestContext`, CRUD + negative cases, schema validation, API-seeded UI state | 🚧 In progress (CRUD suite + reusable client done; schema validation and API-seeded UI tests pending) |
-| 5 — CI/CD & Test Infrastructure | GitHub Actions, sharding, HTML/Allure reporting, flaky-test policy | ⏳ Not started |
-| 6 — Maintainability & QE | Test pyramid strategy, risk-based prioritization, visual/a11y testing, strategy doc | ⏳ Not started |
+| 1 — Programming Foundations | TS fundamentals, OOP, SOLID, standalone utility lib + unit tests | ⏳ Not started |
+| 2 — Playwright Fundamentals | Locators, auto-waiting, assertions, fixtures/hooks, 10-15 UI tests | 🚧 In progress (1 UI smoke test; full 10-15 test UI suite not built) |
+| 3 — Framework Architecture | POM/Screenplay, custom fixtures, factory/builder patterns, `/src` structure | 🚧 In progress (custom `apiClient` fixture done; POM/factory/builder patterns and a `/src` reorg not done) |
+| 4 — API Test Automation | `APIRequestContext`, CRUD + negative cases, schema validation, API-seeded UI state | ✅ Done (CRUD + negative cases + chained flows + Zod schema validation; API-seeded-UI is a documented reference pattern pending a real backend) |
+| 5 — CI/CD & Test Infrastructure | GitHub Actions, sharding, HTML/Allure reporting, flaky-test policy | ✅ Done (smoke-on-PR + nightly regression, 4-way sharding, merged HTML reports, GitHub Pages publishing, Slack/webhook failure alerts, CI retries) |
+| 6 — Maintainability & QE | Test pyramid strategy, risk-based prioritization, visual/a11y testing, strategy doc | 🚧 Mostly done (Test Strategy doc, flakiness policy, synthetic test data; visual regression, accessibility, and performance checks are proposed but not yet implemented) |
 | 7 — Advanced & Specialization | BDD, component testing, security testing, mobile/monorepo patterns | ⏳ Not started |
 
 ## What's in here
 
 - **UI testing** — [`tests/hello.spec.ts`](tests/hello.spec.ts): a login flow
-  test against [SauceDemo](https://www.saucedemo.com/), covering locators,
-  navigation, and assertions.
+  test against [SauceDemo](https://www.saucedemo.com/), tagged `@smoke`,
+  covering locators, navigation, and assertions.
 - **API testing** — [`tests/api.spec.ts`](tests/api.spec.ts): a CRUD test
   suite against the [JSONPlaceholder](https://jsonplaceholder.typicode.com/)
-  fake REST API, covering happy-path and error-case scenarios (GET, POST,
-  PUT, PATCH, DELETE, 404s, invalid input).
+  fake REST API — happy-path and error-case scenarios (GET, POST, PUT,
+  PATCH, DELETE, 404s, invalid input) — plus two `test.describe.serial`
+  chained-flow suites where each step's response feeds the next request: a
+  read-only `post → author → author's posts → comments` traversal over real
+  seeded data, and a `create → patch → delete` lifecycle using the id the
+  server actually assigns.
 - **Reusable API client** — [`tests/support/jsonPlaceholderClient.ts`](tests/support/jsonPlaceholderClient.ts):
   wraps `APIRequestContext` in a small client class (init/dispose lifecycle,
   one method per endpoint) so tests call `client.getPost(1)` instead of
-  repeating raw `request.get(...)` calls and base URLs everywhere.
+  repeating raw `request.get(...)` calls and base URLs everywhere. Base URL
+  is configurable via `API_BASE_URL`.
+- **Custom Playwright fixture** — [`tests/fixtures/api.fixtures.ts`](tests/fixtures/api.fixtures.ts):
+  extends Playwright's base `test` with an `apiClient` fixture that inits
+  and disposes a fresh `JsonPlaceholderClient` automatically per test —
+  tests just declare `async ({ apiClient }) => {...}`, no manual lifecycle
+  management.
+- **Schema/contract validation** — [`tests/schemas/product.schema.ts`](tests/schemas/product.schema.ts)
+  defines a Zod schema with required/optional fields, an enum-restricted
+  category, a nested object, and real formats (positive ints, email, ISO
+  datetime, bounded percentage); [`tests/schema-demo.spec.ts`](tests/schema-demo.spec.ts)
+  validates sample payloads against it.
+- **Synthetic test data** — [`tests/support/testDataFactory.ts`](tests/support/testDataFactory.ts):
+  a `generateProduct()` factory (via `@faker-js/faker`) so create/update
+  tests assert against generated values instead of hardcoded literals that
+  would collide across parallel runs.
+- **Auth pattern reference** — [`tests/authPattern.spec.ts`](tests/authPattern.spec.ts):
+  bearer token, API key, and OAuth-via-`storageState` patterns for test
+  setup. Runnable tests are marked `.skip` with a comment, since they target
+  illustrative endpoints with no real backend behind them yet.
+- **API-seeded UI setup reference** — [`tests/chainigApiCall.spec.ts`](tests/chainigApiCall.spec.ts):
+  seeding state via API calls to skip slow UI setup (create a user + order,
+  then verify only the UI behavior that matters), plus a fixture-wrapped
+  variant and a chained multi-call scenario. Also reference-only, `.skip`ped
+  pending a real backend.
+- **CI/CD pipeline** — [`.github/workflows/playwright.yml`](.github/workflows/playwright.yml):
+  see the [CI/CD](#cicd) section below.
+- **Test Strategy doc** — [`docs/TEST_STRATEGY.md`](docs/TEST_STRATEGY.md):
+  pyramid breakdown, risk-based prioritization, flakiness root-causing and
+  policy, test data management strategies, shift-left practices, metrics
+  that matter (and why coverage % isn't tracked), and proposed visual/a11y/
+  performance checks.
 - **TypeScript fundamentals notes** — [`learn/typescript-fundamentals.ts`](learn/typescript-fundamentals.ts):
   a scratch file used to work through core TS/JS concepts (JSON parsing,
   `stringify`, etc.) needed to write and reason about the tests above.
@@ -54,6 +108,7 @@ npx playwright install   # first time only — downloads browser binaries
 
 ```bash
 npm test              # run the full suite headless
+npm run test:smoke     # run only tests tagged @smoke
 npm run test:headed   # run with a visible browser
 npx playwright test tests/api.spec.ts   # run a single file
 ```
@@ -64,6 +119,29 @@ Test results and traces are written to `playwright-report/` and
 ```bash
 npx playwright show-report
 ```
+
+CI runs with 2 retries per failing test (`retries: process.env.CI ? 2 : 0`
+in `playwright.config.ts`); local runs fail immediately with no retries, so
+flakiness isn't masked while actively debugging.
+
+## CI/CD
+
+[`.github/workflows/playwright.yml`](.github/workflows/playwright.yml) runs
+two tiers, each sharded across 4 parallel jobs with per-shard blob reports
+merged into one downloadable HTML report:
+
+- **Smoke** — on every PR targeting `main`. Runs only the 4 tests tagged
+  `@smoke` (the SauceDemo login + 3 core CRUD happy paths) for fast
+  feedback.
+- **Regression** — nightly at 2am UTC (plus manual `workflow_dispatch`).
+  Runs the entire suite, no tag filter.
+
+On a failing regression run, a `notify-regression-failure` job posts to a
+Slack/webhook URL (`SLACK_WEBHOOK_URL` repo secret) with a link straight to
+the failed run. A `publish-report` job also deploys the merged HTML report
+to GitHub Pages (requires enabling **Settings → Pages → Source → GitHub
+Actions** once), so the latest regression results are viewable at a public
+URL, not just as a downloadable artifact.
 
 ## Linting & formatting
 
