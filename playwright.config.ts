@@ -4,6 +4,7 @@ export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
   reporter: process.env.CI ? 'blob' : 'html',
+  retries: process.env.CI ? 2 : 0,
   use: {
     trace: 'on-first-retry',
   },

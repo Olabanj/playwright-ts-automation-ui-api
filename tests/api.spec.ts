@@ -1,4 +1,5 @@
 import { test, expect } from './fixtures/api.fixtures';
+import { generateProduct } from './support/testDataFactory';
 
 test.describe('JSONPlaceholder API', () => {
   test('Get a request return a product via api', { tag: '@smoke' }, async ({ apiClient }) => {
@@ -13,18 +14,15 @@ test.describe('JSONPlaceholder API', () => {
   });
 
   test('create a product via api', { tag: '@smoke' }, async ({ apiClient }) => {
-    const response = await apiClient.createPost({
-      title: 'New Product',
-      body: 'This is a new product',
-      userId: 1,
-    });
+    const newProduct = generateProduct();
+    const response = await apiClient.createPost(newProduct);
     expect(response.status()).toBe(201);
     expect(response.ok()).toBeTruthy();
 
     const responseBody = await response.json();
-    expect(responseBody.title).toBe('New Product');
-    expect(responseBody.body).toBe('This is a new product');
-    expect(responseBody.userId).toBe(1);
+    expect(responseBody.title).toBe(newProduct.title);
+    expect(responseBody.body).toBe(newProduct.body);
+    expect(responseBody.userId).toBe(newProduct.userId);
   });
 
   test('update a product via api', async ({ apiClient }) => {
@@ -161,26 +159,23 @@ test.describe.serial('Chained lifecycle: create → patch → delete using the c
   let createdId: number;
 
   test('1) create a post and capture the id the server assigned', async ({ apiClient }) => {
-    const response = await apiClient.createPost({
-      title: 'Chained Product',
-      body: 'Created as the first step of a chained lifecycle',
-      userId: 1,
-    });
+    const newProduct = generateProduct();
+    const response = await apiClient.createPost(newProduct);
     expect(response.status()).toBe(201);
 
     const body = await response.json();
     createdId = body.id;
     expect(createdId).toBeDefined();
+    expect(body.title).toBe(newProduct.title);
   });
 
   test('2) partially update the created post using its id', async ({ apiClient }) => {
-    const response = await apiClient.patchPost(createdId, {
-      title: 'Chained Product (Updated)',
-    });
+    const updatedTitle = generateProduct().title;
+    const response = await apiClient.patchPost(createdId, { title: updatedTitle });
     expect(response.status()).toBe(200);
 
     const body = await response.json();
-    expect(body.title).toBe('Chained Product (Updated)');
+    expect(body.title).toBe(updatedTitle);
   });
 
   test('3) delete the created post using its id', async ({ apiClient }) => {
