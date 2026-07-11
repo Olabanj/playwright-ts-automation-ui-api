@@ -16,12 +16,12 @@ to prove, for anyone reviewing this as a hiring artifact:
 | API CRUD + negative-case testing | [`tests/api/api.spec.ts`](tests/api/api.spec.ts) |
 | Multi-hop chained API flows (data flowing between requests) | [`tests/api/api.spec.ts`](tests/api/api.spec.ts) — `Chained lookup` and `Chained lifecycle` suites |
 | Contract/schema validation (Zod) | [`src/schemas/product.schema.ts`](src/schemas/product.schema.ts), [`tests/api/schema-demo.spec.ts`](tests/api/schema-demo.spec.ts) |
-| Page Object Model | [`src/pages/LoginPage.ts`](src/pages/LoginPage.ts) |
-| Custom Playwright fixtures (dependency injection) | [`src/fixtures/api.fixtures.ts`](src/fixtures/api.fixtures.ts) |
+| Page Object Model (4 pages) | [`src/pages/`](src/pages/) — `LoginPage`, `InventoryPage`, `CartPage`, `CheckoutPage` |
+| Custom Playwright fixtures (dependency injection) | [`src/fixtures/api.fixtures.ts`](src/fixtures/api.fixtures.ts), [`src/fixtures/ui.fixtures.ts`](src/fixtures/ui.fixtures.ts) (authenticated-session fixture) |
 | Reusable API client (service-object pattern) | [`src/utils/jsonPlaceholderClient.ts`](src/utils/jsonPlaceholderClient.ts) |
 | Synthetic test-data generation | [`src/utils/testDataFactory.ts`](src/utils/testDataFactory.ts) |
 | Environment configuration | [`src/config/env.ts`](src/config/env.ts) |
-| UI test automation | [`tests/ui/hello.spec.ts`](tests/ui/hello.spec.ts) |
+| UI test automation (15 tests: login, inventory, cart, checkout) | [`tests/ui/`](tests/ui/) |
 | Auth patterns (bearer, API key, OAuth+storageState) | [`tests/api/authPattern.spec.ts`](tests/api/authPattern.spec.ts) |
 | API-seeded UI setup pattern | [`tests/api/chainingApiCall.spec.ts`](tests/api/chainingApiCall.spec.ts) |
 | CI/CD: tagged smoke-on-PR + nightly regression, 4-way sharding, merged HTML reports, GitHub Pages publishing, Slack/webhook failure alerts | [`.github/workflows/playwright.yml`](.github/workflows/playwright.yml) |
@@ -33,8 +33,8 @@ to prove, for anyone reviewing this as a hiring artifact:
 |---|---|---|
 | 0 — Setup & Git Hygiene | TS config, linting, first Playwright test (headed + headless) | Done |
 | 1 — Programming Foundations | TS fundamentals, OOP, SOLID, standalone utility lib + unit tests | ⏳ Not started |
-| 2 — Playwright Fundamentals | Locators, auto-waiting, assertions, fixtures/hooks, 10-15 UI tests | 🚧 In progress (1 UI smoke test via a Page Object; full 10-15 test UI suite not built) |
-| 3 — Framework Architecture | POM/Screenplay, custom fixtures, factory/builder patterns, `/src` structure | ✅ Done (`/src` reorg with `pages`/`fixtures`/`utils`/`config`/`schemas`, a `LoginPage` POM, custom `apiClient` fixture, centralized env config; Screenplay pattern and Builder/Singleton not covered) |
+| 2 — Playwright Fundamentals | Locators, auto-waiting, assertions, fixtures/hooks, 10-15 UI tests | ✅ Done (15 UI tests across login/inventory/cart/checkout against SauceDemo, via Page Objects and an authenticated-session fixture) |
+| 3 — Framework Architecture | POM/Screenplay, custom fixtures, factory/builder patterns, `/src` structure | ✅ Done (`/src` reorg with `pages`/`fixtures`/`utils`/`config`/`schemas`, 4 Page Objects, custom `apiClient` and `loggedInPage` fixtures, centralized env config; Screenplay pattern and Builder/Singleton not covered) |
 | 4 — API Test Automation | `APIRequestContext`, CRUD + negative cases, schema validation, API-seeded UI state | ✅ Done (CRUD + negative cases + chained flows + Zod schema validation; API-seeded-UI is a documented reference pattern pending a real backend) |
 | 5 — CI/CD & Test Infrastructure | GitHub Actions, sharding, HTML/Allure reporting, flaky-test policy | ✅ Done (smoke-on-PR + nightly regression, 4-way sharding, merged HTML reports, GitHub Pages publishing, Slack/webhook failure alerts, CI retries) |
 | 6 — Maintainability & QE | Test pyramid strategy, risk-based prioritization, visual/a11y testing, strategy doc | Done |
@@ -47,8 +47,8 @@ Framework code lives in `/src` (reusable across the suite); specs live in
 
 ```
 /src
-  /pages      -> Page Objects (LoginPage)
-  /fixtures   -> custom Playwright fixtures (apiClient)
+  /pages      -> Page Objects (LoginPage, InventoryPage, CartPage, CheckoutPage)
+  /fixtures   -> custom Playwright fixtures (apiClient, loggedInPage)
   /utils      -> reusable client + synthetic test-data factory
   /config     -> environment config (base URLs)
   /schemas    -> Zod contract schemas
@@ -57,13 +57,25 @@ Framework code lives in `/src` (reusable across the suite); specs live in
   /api        -> API specs (use src/fixtures, src/utils, src/schemas)
 ```
 
-- **UI testing** — [`tests/ui/hello.spec.ts`](tests/ui/hello.spec.ts): a login
-  flow test against [SauceDemo](https://www.saucedemo.com/), tagged
-  `@smoke`, driven through the [`LoginPage`](src/pages/LoginPage.ts) Page
-  Object rather than inline locators.
-- **Page Object** — [`src/pages/LoginPage.ts`](src/pages/LoginPage.ts): wraps
-  the SauceDemo login form's locators and actions (`goto()`, `login(...)`)
-  behind a class, so the test itself reads as intent, not raw selectors.
+- **UI testing** — 15 tests against [SauceDemo](https://www.saucedemo.com/),
+  each driven through a Page Object rather than inline locators:
+  - [`tests/ui/login.spec.ts`](tests/ui/login.spec.ts) (5): valid login
+    (tagged `@smoke`), locked-out user, wrong password, empty username, empty
+    password.
+  - [`tests/ui/inventory.spec.ts`](tests/ui/inventory.spec.ts) (4): product
+    count, sort-by-price ordering, add-to-cart badge count, remove-from-cart
+    badge count.
+  - [`tests/ui/cart.spec.ts`](tests/ui/cart.spec.ts) (3): item appears after
+    adding, removing empties the cart, checkout navigation.
+  - [`tests/ui/checkout.spec.ts`](tests/ui/checkout.spec.ts) (3): required-field
+    validation, order total on the overview step, order confirmation.
+- **Page Objects** — [`src/pages/`](src/pages/): `LoginPage`, `InventoryPage`,
+  `CartPage`, `CheckoutPage` — each wraps one page's locators and actions
+  behind a class, so tests read as intent, not raw selectors.
+- **UI authenticated-session fixture** — [`src/fixtures/ui.fixtures.ts`](src/fixtures/ui.fixtures.ts):
+  a `loggedInPage` fixture that logs in once via `LoginPage` before the test
+  body runs, so inventory/cart/checkout tests start already authenticated
+  instead of repeating login steps.
 - **API testing** — [`tests/api/api.spec.ts`](tests/api/api.spec.ts): a CRUD
   test suite against the [JSONPlaceholder](https://jsonplaceholder.typicode.com/)
   fake REST API — happy-path and error-case scenarios (GET, POST, PUT,

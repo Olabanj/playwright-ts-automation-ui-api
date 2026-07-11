@@ -30,13 +30,14 @@ the network boundary.
 **Where this project actually stands:** heavily API-weighted by design —
 [`tests/api/api.spec.ts`](../tests/api/api.spec.ts) covers CRUD, negative cases, and
 chained multi-call flows against JSONPlaceholder, plus schema-contract tests
-in [`tests/api/schema-demo.spec.ts`](../tests/api/schema-demo.spec.ts). UI is
-deliberately thin: one smoke test
-([`tests/ui/hello.spec.ts`](../tests/ui/hello.spec.ts)) covering the SauceDemo
-login golden path, not a full UI regression suite. **Unit is the current
+in [`tests/api/schema-demo.spec.ts`](../tests/api/schema-demo.spec.ts). UI now
+has 15 tests across [`tests/ui/`](../tests/ui/) (login, inventory, cart,
+checkout) against SauceDemo, driven through Page Objects and an
+authenticated-session fixture — still deliberately capped below API's depth,
+since UI remains the slower, more flake-prone layer. **Unit is the current
 gap** — there's no standalone utility/data-factory layer with its own unit
 tests yet (tracked as roadmap Phase 1). Until that lands, the pyramid here
-is really API-heavy with a UI cap, not a true pyramid.
+is API-heavy with a real but smaller UI layer, not yet a true pyramid.
 
 ## 2. Risk-based prioritization
 

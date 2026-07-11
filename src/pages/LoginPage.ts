@@ -15,4 +15,8 @@ export class LoginPage {
     await this.page.getByPlaceholder('Password').fill(password);
     await this.page.getByRole('button', { name: 'Login' }).click();
   }
+
+  get errorMessage() {
+    return this.page.locator('[data-test="error"]');
+  }
 }
