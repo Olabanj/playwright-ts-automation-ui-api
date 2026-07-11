@@ -32,7 +32,7 @@ to prove, for anyone reviewing this as a hiring artifact:
 | Phase | Focus | Status |
 |---|---|---|
 | 0 — Setup & Git Hygiene | TS config, linting, first Playwright test (headed + headless) | Done |
-| 1 — Programming Foundations | TS fundamentals, OOP, SOLID, standalone utility lib + unit tests | ⏳ Not started |
+| 1 — Programming Foundations | TS fundamentals, OOP, SOLID, standalone utility lib + unit tests | Done |
 | 2 — Playwright Fundamentals | Locators, auto-waiting, assertions, fixtures/hooks, 10-15 UI tests | ✅ Done (15 UI tests across login/inventory/cart/checkout against SauceDemo, via Page Objects and an authenticated-session fixture) |
 | 3 — Framework Architecture | POM/Screenplay, custom fixtures, factory/builder patterns, `/src` structure | ✅ Done (`/src` reorg with `pages`/`fixtures`/`utils`/`config`/`schemas`, 4 Page Objects, custom `apiClient` and `loggedInPage` fixtures, centralized env config; Screenplay pattern and Builder/Singleton not covered) |
 | 4 — API Test Automation | `APIRequestContext`, CRUD + negative cases, schema validation, API-seeded UI state | ✅ Done (CRUD + negative cases + chained flows + Zod schema validation; API-seeded-UI is a documented reference pattern pending a real backend) |
