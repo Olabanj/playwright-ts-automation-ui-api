@@ -1,0 +1,135 @@
+name: Playwright Tests
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    if: github.event_name == 'pull_request'
+    name: Smoke (shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2, 3, 4]
+        shardTotal: [4]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps
+
+      - name: Run smoke suite (this shard's slice)
+        run: npx playwright test --grep @smoke --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+
+      - name: Upload blob report (shard ${{ matrix.shardIndex }})
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blob-report-smoke-${{ matrix.shardIndex }}
+          path: blob-report
+          retention-days: 7
+
+  merge-smoke-report:
+    if: github.event_name == 'pull_request'
+    needs: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Download all smoke blob reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: blob-report-smoke-*
+          path: all-blob-reports
+          merge-multiple: true
+
+      - name: Merge into one HTML report
+        run: npx playwright merge-reports --reporter html ./all-blob-reports
+
+      - name: Upload merged HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-report-smoke
+          path: playwright-report
+          retention-days: 14
+
+  regression:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    name: Regression (shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2, 3, 4]
+        shardTotal: [4]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps
+
+      - name: Run full regression suite (this shard's slice)
+        run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+
+      - name: Upload blob report (shard ${{ matrix.shardIndex }})
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blob-report-regression-${{ matrix.shardIndex }}
+          path: blob-report
+          retention-days: 7
+
+  merge-regression-report:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Download all regression blob reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: blob-report-regression-*
+          path: all-blob-reports
+          merge-multiple: true
+
+      - name: Merge into one HTML report
+        run: npx playwright merge-reports --reporter html ./all-blob-reports
+
+      - name: Upload merged HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-report-regression
+          path: playwright-report
+          retention-days: 14

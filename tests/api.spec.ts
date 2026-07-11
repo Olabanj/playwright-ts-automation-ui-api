@@ -1,7 +1,7 @@
 import { test, expect } from './fixtures/api.fixtures';
 
 test.describe('JSONPlaceholder API', () => {
-  test('Get a request return a product via api', async ({ apiClient }) => {
+  test('Get a request return a product via api', { tag: '@smoke' }, async ({ apiClient }) => {
     const response = await apiClient.getPosts();
     expect(response.status()).toBe(200);
     expect(response.ok()).toBeTruthy();
@@ -12,7 +12,7 @@ test.describe('JSONPlaceholder API', () => {
     expect(responseBody[0].id).toBe(1);
   });
 
-  test('create a product via api', async ({ apiClient }) => {
+  test('create a product via api', { tag: '@smoke' }, async ({ apiClient }) => {
     const response = await apiClient.createPost({
       title: 'New Product',
       body: 'This is a new product',
@@ -59,7 +59,7 @@ test.describe('JSONPlaceholder API', () => {
     expect(responseBody.title).toBe('Partially Updated Product');
   });
 
-  test('get a single product via api', async ({ apiClient }) => {
+  test('get a single product via api', { tag: '@smoke' }, async ({ apiClient }) => {
     const response = await apiClient.getPost(1);
     expect(response.status()).toBe(200);
     expect(response.ok()).toBeTruthy();
