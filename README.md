@@ -1,17 +1,11 @@
 # sdet-portfolio
 
-A TypeScript + Playwright test automation portfolio, built as the running
-interview artifact for a self-directed **SDET Roadmap: Beginner → Advanced**
-(~16 weeks, ~10-12 hrs/week). Each phase of the roadmap adds to this same
+A TypeScript + Playwright test automation portfolio Each phase of the roadmap adds to this same
 repo rather than starting a new project, so the commit history itself
 demonstrates how the framework evolved from a single "hello world" test into
 a structured automation suite.
 
-A recurring practice across every phase is **AI-assisted coding as a working
-method, not a shortcut** — using an AI pairing partner to scaffold config,
-review code against SOLID principles, propose architectural tradeoffs, debug
-CI failures, and generate schemas/test cases, while always requiring a
-written explanation of *why* a suggestion is correct before accepting it.
+
 
 ## Skills demonstrated
 
@@ -37,12 +31,12 @@ to prove, for anyone reviewing this as a hiring artifact:
 | Phase | Focus | Status |
 |---|---|---|
 | 0 — Setup & Git Hygiene | TS config, linting, first Playwright test (headed + headless) | Done |
-| 1 — Programming Foundations | TS fundamentals, OOP, SOLID, standalone utility lib + unit tests | ⏳ Not started |
-| 2 — Playwright Fundamentals | Locators, auto-waiting, assertions, fixtures/hooks, 10-15 UI tests | 🚧 In progress (1 UI smoke test; full 10-15 test UI suite not built) |
+| 1 — Programming Foundations | TS fundamentals, OOP, SOLID, standalone utility lib + unit tests | Done
+| 2 — Playwright Fundamentals | Locators, auto-waiting, assertions, fixtures/hooks, 10-15 UI tests | Done 
 | 3 — Framework Architecture | POM/Screenplay, custom fixtures, factory/builder patterns, `/src` structure | 🚧 In progress (custom `apiClient` fixture done; POM/factory/builder patterns and a `/src` reorg not done) |
 | 4 — API Test Automation | `APIRequestContext`, CRUD + negative cases, schema validation, API-seeded UI state | ✅ Done (CRUD + negative cases + chained flows + Zod schema validation; API-seeded-UI is a documented reference pattern pending a real backend) |
 | 5 — CI/CD & Test Infrastructure | GitHub Actions, sharding, HTML/Allure reporting, flaky-test policy | ✅ Done (smoke-on-PR + nightly regression, 4-way sharding, merged HTML reports, GitHub Pages publishing, Slack/webhook failure alerts, CI retries) |
-| 6 — Maintainability & QE | Test pyramid strategy, risk-based prioritization, visual/a11y testing, strategy doc | 🚧 Mostly done (Test Strategy doc, flakiness policy, synthetic test data; visual regression, accessibility, and performance checks are proposed but not yet implemented) |
+| 6 — Maintainability & QE | Test pyramid strategy, risk-based prioritization, visual/a11y testing, strategy doc | Done |
 | 7 — Advanced & Specialization | BDD, component testing, security testing, mobile/monorepo patterns | ⏳ Not started |
 
 ## What's in here
