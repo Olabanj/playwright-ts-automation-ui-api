@@ -133,3 +133,15 @@ jobs:
           name: html-report-regression
           path: playwright-report
           retention-days: 14
+
+  notify-regression-failure:
+    name: Notify on regression failure
+    if: always() && needs.regression.result == 'failure'
+    needs: [regression, merge-regression-report]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post failure notification to Slack
+        run: |
+          curl -sS -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"🔴 Nightly Playwright regression failed on ${{ github.repository }} (${{ github.event_name }}).\nRun details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            "${{ secrets.SLACK_WEBHOOK_URL }}"
