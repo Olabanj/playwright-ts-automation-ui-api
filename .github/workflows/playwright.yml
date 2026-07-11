@@ -134,6 +134,35 @@ jobs:
           path: playwright-report
           retention-days: 14
 
+  publish-report:
+    name: Publish regression report to GitHub Pages
+    if: >
+      needs.merge-regression-report.result == 'success' &&
+      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    needs: merge-regression-report
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download merged HTML report
+        uses: actions/download-artifact@v4
+        with:
+          name: html-report-regression
+          path: playwright-report
+
+      - name: Package report for Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: playwright-report
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
   notify-regression-failure:
     name: Notify on regression failure
     if: always() && needs.regression.result == 'failure'
